@@ -1,4 +1,4 @@
-# TODO: 1 - import the OpenAI class from the openai library
+from openai import OpenAI
 import numpy as np
 import pandas as pd
 import re
@@ -6,27 +6,32 @@ import csv
 import uuid
 from datetime import datetime
 
-'''
+
 # DirectPromptAgent class definition
 class DirectPromptAgent:
-    
+    """
+    A simple agent answering user prompts directly without incorporating additional context,
+    memory, or specialised tools.
+    """
+
     def __init__(self, openai_api_key):
         # Initialize the agent
-        # TODO: 2 - Define an attribute named openai_api_key to store the OpenAI API key provided to this class.
+        self.openai_api_key = openai_api_key
 
     def respond(self, prompt):
         # Generate a response using the OpenAI API
-        client = OpenAI(api_key=self.openai_api_key)
-        response = client.chat.completions.create(
-            model=# TODO: 3 - Specify the model to use (gpt-3.5-turbo)
-            messages=[
-                # TODO: 4 - Provide the user's prompt here. Do not add a system prompt.
-            ],
-            temperature=0
+        client = OpenAI(
+            base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
         )
-        # TODO: 5 - Return only the textual content of the response (not the full JSON response).
-'''
-        
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+        )
+
+        return response.choices[0].message.content
+
+
 '''
 # AugmentedPromptAgent class definition
 class AugmentedPromptAgent:
@@ -82,6 +87,7 @@ class KnowledgeAugmentedPromptAgent:
         return response.choices[0].message.content
 '''
 
+
 # RAGKnowledgePromptAgent class definition
 class RAGKnowledgePromptAgent:
     """
@@ -103,7 +109,9 @@ class RAGKnowledgePromptAgent:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.openai_api_key = openai_api_key
-        self.unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.csv"
+        self.unique_filename = (
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.csv"
+        )
 
     def get_embedding(self, text):
         """
@@ -115,11 +123,11 @@ class RAGKnowledgePromptAgent:
         Returns:
         list: The embedding vector.
         """
-        client = OpenAI(base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key)
+        client = OpenAI(
+            base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
+        )
         response = client.embeddings.create(
-            model="text-embedding-3-large",
-            input=text,
-            encoding_format="float"
+            model="text-embedding-3-large", input=text, encoding_format="float"
         )
         return response.data[0].embedding
 
@@ -148,7 +156,7 @@ class RAGKnowledgePromptAgent:
         list: List of dictionaries containing chunk metadata.
         """
         separator = "\n"
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
 
         if len(text) <= self.chunk_size:
             return [{"chunk_id": 0, "text": text, "chunk_size": len(text)}]
@@ -160,18 +168,22 @@ class RAGKnowledgePromptAgent:
             if separator in text[start:end]:
                 end = start + text[start:end].rindex(separator) + len(separator)
 
-            chunks.append({
-                "chunk_id": chunk_id,
-                "text": text[start:end],
-                "chunk_size": end - start,
-                "start_char": start,
-                "end_char": end
-            })
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "text": text[start:end],
+                    "chunk_size": end - start,
+                    "start_char": start,
+                    "end_char": end,
+                }
+            )
 
             start = end - self.chunk_overlap
             chunk_id += 1
 
-        with open(f"chunks-{self.unique_filename}", 'w', newline='', encoding='utf-8') as csvfile:
+        with open(
+            f"chunks-{self.unique_filename}", "w", newline="", encoding="utf-8"
+        ) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=["text", "chunk_size"])
             writer.writeheader()
             for chunk in chunks:
@@ -186,9 +198,9 @@ class RAGKnowledgePromptAgent:
         Returns:
         DataFrame: DataFrame containing text chunks and their embeddings.
         """
-        df = pd.read_csv(f"chunks-{self.unique_filename}", encoding='utf-8')
-        df['embeddings'] = df['text'].apply(self.get_embedding)
-        df.to_csv(f"embeddings-{self.unique_filename}", encoding='utf-8', index=False)
+        df = pd.read_csv(f"chunks-{self.unique_filename}", encoding="utf-8")
+        df["embeddings"] = df["text"].apply(self.get_embedding)
+        df.to_csv(f"embeddings-{self.unique_filename}", encoding="utf-8", index=False)
         return df
 
     def find_prompt_in_knowledge(self, prompt):
@@ -202,25 +214,36 @@ class RAGKnowledgePromptAgent:
         str: Response derived from the most similar chunk in knowledge.
         """
         prompt_embedding = self.get_embedding(prompt)
-        df = pd.read_csv(f"embeddings-{self.unique_filename}", encoding='utf-8')
-        df['embeddings'] = df['embeddings'].apply(lambda x: np.array(eval(x)))
-        df['similarity'] = df['embeddings'].apply(lambda emb: self.calculate_similarity(prompt_embedding, emb))
+        df = pd.read_csv(f"embeddings-{self.unique_filename}", encoding="utf-8")
+        df["embeddings"] = df["embeddings"].apply(lambda x: np.array(eval(x)))
+        df["similarity"] = df["embeddings"].apply(
+            lambda emb: self.calculate_similarity(prompt_embedding, emb)
+        )
 
-        best_chunk = df.loc[df['similarity'].idxmax(), 'text']
+        best_chunk = df.loc[df["similarity"].idxmax(), "text"]
 
-        client = OpenAI(base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key)
+        client = OpenAI(
+            base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
+        )
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": f"You are {self.persona}, a knowledge-based assistant. Forget previous context."},
-                {"role": "user", "content": f"Answer based only on this information: {best_chunk}. Prompt: {prompt}"}
+                {
+                    "role": "system",
+                    "content": f"You are {self.persona}, a knowledge-based assistant. Forget previous context.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Answer based only on this information: {best_chunk}. Prompt: {prompt}",
+                },
             ],
-            temperature=0
+            temperature=0,
         )
 
         return response.choices[0].message.content
 
-'''
+
+"""
 class EvaluationAgent:
     
     def __init__(self, openai_api_key, persona, evaluation_criteria, worker_agent, max_interactions):
@@ -279,9 +302,9 @@ class EvaluationAgent:
         return {
             # TODO: 7 - Return a dictionary containing the final response, evaluation, and number of iterations
         }   
-'''
+"""
 
-'''
+"""
 class RoutingAgent():
 
     def __init__(self, openai_api_key, agents):
@@ -318,9 +341,9 @@ class RoutingAgent():
         print(f"[Router] Best agent: {best_agent['name']} (score={best_score:.3f})")
         return best_agent["func"](user_input)
 
-'''
+"""
 
-'''
+"""
 class ActionPlanningAgent:
 
     def __init__(self, openai_api_key, knowledge):
@@ -339,4 +362,4 @@ class ActionPlanningAgent:
         steps = response_text.split("\n")
 
         return steps
-'''
+"""
