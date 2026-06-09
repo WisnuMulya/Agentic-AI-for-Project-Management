@@ -47,7 +47,12 @@ agents = [
 ]
 
 routing_agent.agents = agents
+prompts = [
+    "Tell me about the history of Rome, Texas",
+    "Tell me about the history of Rome, Italy",
+    "One story takes 2 days, and there are 20 stories",
+]
 
-print(routing_agent.route("Tell me about the history of Rome, Texas"))
-print(routing_agent.route("Tell me about the history of Rome, Italy"))
-print(routing_agent.route("One story takes 2 days, and there are 20 stories"))
+for prompt in prompts:
+    print(f"\nPrompt: {prompt}")
+    print(routing_agent.route(prompt))
