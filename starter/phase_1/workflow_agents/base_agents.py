@@ -218,7 +218,7 @@ class RAGKnowledgePromptAgent:
 
         chunks, start, chunk_id = [], 0, 0
 
-        while start < len(text):
+        while start < len(text) - self.chunk_overlap:
             end = min(start + self.chunk_size, len(text))
             if separator in text[start:end]:
                 end = start + text[start:end].rindex(separator) + len(separator)
@@ -237,7 +237,7 @@ class RAGKnowledgePromptAgent:
             chunk_id += 1
 
         with open(
-            f"chunks-{self.unique_filename}", "w", newline="", encoding="utf-8"
+            f"./chunks-{self.unique_filename}", "w", newline="", encoding="utf-8"
         ) as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=["text", "chunk_size"])
             writer.writeheader()
@@ -253,7 +253,7 @@ class RAGKnowledgePromptAgent:
         Returns:
         DataFrame: DataFrame containing text chunks and their embeddings.
         """
-        df = pd.read_csv(f"chunks-{self.unique_filename}", encoding="utf-8")
+        df = pd.read_csv(f"./chunks-{self.unique_filename}", encoding="utf-8")
         df["embeddings"] = df["text"].apply(self.get_embedding)
         df.to_csv(f"embeddings-{self.unique_filename}", encoding="utf-8", index=False)
         return df
@@ -269,7 +269,7 @@ class RAGKnowledgePromptAgent:
         str: Response derived from the most similar chunk in knowledge.
         """
         prompt_embedding = self.get_embedding(prompt)
-        df = pd.read_csv(f"embeddings-{self.unique_filename}", encoding="utf-8")
+        df = pd.read_csv(f"./embeddings-{self.unique_filename}", encoding="utf-8")
         df["embeddings"] = df["embeddings"].apply(lambda x: np.array(eval(x)))
         df["similarity"] = df["embeddings"].apply(
             lambda emb: self.calculate_similarity(prompt_embedding, emb)
