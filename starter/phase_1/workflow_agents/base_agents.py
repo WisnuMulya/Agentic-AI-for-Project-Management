@@ -506,10 +506,22 @@ class ActionPlanningAgent:
             base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
         )
 
-        system_prompt = f"You are an action planning agent. \
-        Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for. \
-        You return the steps as a list. Only return the steps in your knowledge. \
-        Forget any previous context. This is your knowledge: {self.knowledge}"
+        system_prompt = f"""
+        You are an action planning agent.
+        Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for.
+        You return the steps as a list. Only return the steps in your knowledge.
+        Forget any previous context.
+        Follow the output format strictly, or you will fail.
+        
+        # OUTPUT FORMAT
+        1. <Step 1>
+        2. <Step 2>
+        3. <Step 3>
+        ...
+
+        # KNOWLEDGE
+        {self.knowledge}
+        """
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
