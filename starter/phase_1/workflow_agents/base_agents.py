@@ -476,23 +476,52 @@ class RoutingAgent:
         return best_agent["func"](prompt)
 
 
-"""
 class ActionPlanningAgent:
+    """
+    An agent that extract and list the steps required to execute a task based on user prompts.
+    """
 
     def __init__(self, openai_api_key, knowledge):
-        # TODO: 1 - Initialize the agent attributes here
+        """
+        Initializes the ActionPlanningAgent with API credentials and a knowledge base.
+
+        Parameters:
+        openai_api_key (str): API key for OpenAI
+        knowledge (str): The knowledge base
+        """
+        self.openai_api_key = openai_api_key
+        self.knowledge = knowledge
 
     def extract_steps_from_prompt(self, prompt):
+        """
+        Extracts and lists the steps required to execute a task based on the user prompt.
 
-        # TODO: 2 - Instantiate the OpenAI client using the provided API key
-        # TODO: 3 - Call the OpenAI API to get a response from the "gpt-3.5-turbo" model.
-        # Provide the following system prompt along with the user's prompt:
-        # "You are an action planning agent. Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for. You return the steps as a list. Only return the steps in your knowledge. Forget any previous context. This is your knowledge: {pass the knowledge here}"
+        Parameters:
+        prompt (str): The user input prompt describing the task.
 
-        response_text = ""  # TODO: 4 - Extract the response text from the OpenAI API response
+        Returns:
+        list: A list of steps required to execute the task.
+        """
+        client = OpenAI(
+            base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
+        )
 
-        # TODO: 5 - Clean and format the extracted steps by removing empty lines and unwanted text
+        system_prompt = f"You are an action planning agent. \
+        Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for. \
+        You return the steps as a list. Only return the steps in your knowledge. \
+        Forget any previous context. This is your knowledge: {self.knowledge}"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.3,
+        )
+
+        response_text = response.choices[0].message.content.strip()
+
+        # Clean and format the extracted steps by removing empty lines and unwanted text
         steps = response_text.split("\n")
 
         return steps
-"""
