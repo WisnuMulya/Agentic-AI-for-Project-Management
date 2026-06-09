@@ -104,7 +104,7 @@ program_manager_evaluation_agent = EvaluationAgent(
 )
 
 # Development Engineer - Knowledge Augmented Prompt Agent
-persona_dev_engineer = "You are a Development Engineer, you are responsible for defining the development tasks for a product."
+persona_dev_engineer = "You are a Development Engineer, you are responsible for defining the development engineering tasks for a product based on the user stories."
 knowledge_dev_engineer = f"""
 # OUTPUT FORMAT
 Task ID: <A unique identifier for tracking purposes>
@@ -202,7 +202,11 @@ def dev_engineer_support_function(query):
 print("\n*** Workflow execution started ***\n")
 # Workflow Prompt
 # ****
-workflow_prompt = "What would the development tasks for this product be?"
+workflow_prompt = (
+    "Create a full development plan for the Email Router product. "
+    "First generate user stories, then define product features, "
+    "then create detailed engineering tasks."
+)
 # ****
 print(f"Task to complete in this workflow, workflow prompt = {workflow_prompt}")
 
@@ -228,14 +232,14 @@ for step in action_plan:
     """
     step_result = routing_agent.route(step_prompt)
     # b. Append the result to 'completed_steps'.
-    completed_steps.append({"step": step, "result": step_result})
+    completed_steps.append(step_result)
     last_step_result = step_result
     # c. Print information about the step being executed and its result.
     print(f"Step result: {step_result}")
 
 # 4. After the loop, print the final output of the workflow (the last completed step).
 if completed_steps:
-    final_output = completed_steps[-1]["result"]
+    final_output = "\n\n".join(completed_steps)
     print("\n*** Workflow execution completed ***\n")
     print(f"Final output of the workflow:\n{final_output}")
 else:
