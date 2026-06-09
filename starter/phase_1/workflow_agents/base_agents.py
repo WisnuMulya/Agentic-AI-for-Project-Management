@@ -32,30 +32,36 @@ class DirectPromptAgent:
         return response.choices[0].message.content
 
 
-'''
 # AugmentedPromptAgent class definition
 class AugmentedPromptAgent:
+    """
+    An agent that responds according to its specified persona.
+    """
+
     def __init__(self, openai_api_key, persona):
         """Initialize the agent with given attributes."""
-        # TODO: 1 - Create an attribute for the agent's persona
         self.openai_api_key = openai_api_key
+        self.persona = persona
 
     def respond(self, input_text):
         """Generate a response using OpenAI API."""
-        client = OpenAI(api_key=self.openai_api_key)
+        client = OpenAI(
+            base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
+        )
 
-        # TODO: 2 - Declare a variable 'response' that calls OpenAI's API for a chat completion.
+        # A system prompt assuming the defined persona and forgetting any previous context
+        system_prompt = "Forget all previous context.\n" + self.persona
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                # TODO: 3 - Add a system prompt instructing the agent to assume the defined persona and explicitly forget previous context.
-                {"role": "user", "content": input_text}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": input_text},
             ],
-            temperature=0
+            temperature=0.7,
         )
 
-        return  # TODO: 4 - Return only the textual content of the response, not the full JSON payload.
-'''
+        return response.choices[0].message.content
+
 
 '''
 # KnowledgeAugmentedPromptAgent class definition
