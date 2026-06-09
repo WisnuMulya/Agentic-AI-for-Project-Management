@@ -15,11 +15,21 @@ class DirectPromptAgent:
     """
 
     def __init__(self, openai_api_key):
-        # Initialize the agent
+        """
+        Initializes the DirectPromptAgent with API credentials.
+        """
         self.openai_api_key = openai_api_key
 
     def respond(self, prompt):
-        # Generate a response using the OpenAI API
+        """
+        Generates a response to the given prompt using the OpenAI API.
+
+        Parameters:
+        prompt (str): The user input prompt to which the agent should respond.
+
+        Returns:
+        str: The generated response from the agent.
+        """
         client = OpenAI(
             base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
         )
@@ -39,12 +49,26 @@ class AugmentedPromptAgent:
     """
 
     def __init__(self, openai_api_key, persona):
-        """Initialize the agent with given attributes."""
+        """
+        Initializes the AugmentedPromptAgent with API credentials and a defined persona.
+
+        Parameters:
+        openai_api_key (str): API key for accessing OpenAI.
+        persona (str): A description of the agent's persona that will influence its responses.
+        """
         self.openai_api_key = openai_api_key
         self.persona = persona
 
     def respond(self, input_text):
-        """Generate a response using OpenAI API."""
+        """
+        Generate a response using OpenAI API.
+
+        Parameters:
+        input_text (str): The input text or prompt for the agent.
+
+        Returns:
+        str: The generated response from the agent.
+        """
         client = OpenAI(
             base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
         )
@@ -71,13 +95,28 @@ class KnowledgeAugmentedPromptAgent:
     """
 
     def __init__(self, openai_api_key, persona, knowledge):
-        """Initialize the agent with provided attributes."""
+        """
+        Initializes the KnowledgeAugmentedPromptAgent with API credentials, persona, and knowledge.
+
+        Parameters:
+        openai_api_key (str): API key for accessing OpenAI.
+        persona (str): A description of the agent's persona that will influence its responses.
+        knowledge (str): The knowledge base that the agent will use to generate responses.
+        """
         self.persona = persona
         self.knowledge = knowledge
         self.openai_api_key = openai_api_key
 
     def respond(self, input_text):
-        """Generate a response using the OpenAI API."""
+        """
+        Generate a response using the OpenAI API.
+
+        Parameters:
+        input_text (str): The input text or prompt for the agent.
+
+        Returns:
+        str: The generated response from the agent.
+        """
         client = OpenAI(
             base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key
         )
