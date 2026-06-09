@@ -509,7 +509,9 @@ class ActionPlanningAgent:
         system_prompt = f"""
         You are an action planning agent.
         Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for.
-        You return the steps as a list with no words other than the steps themselves. Only return the steps in your knowledge.
+        You return the steps as a list with no words other than the steps themselves.
+        Use only one line per step, and start each step with the step number.
+        Only return the steps in your knowledge.
         Forget any previous context.
         
         # OUTPUT FORMAT
